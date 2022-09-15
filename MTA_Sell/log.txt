@@ -1,0 +1,2 @@
+Userul  a ales sa intre in aplicatie.
+Userul Barbusi a ales sa afiseze istoricul comenzilor.

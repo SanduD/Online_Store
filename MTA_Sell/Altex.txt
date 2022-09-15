@@ -1,0 +1,4 @@
+Iphone 13|Cel mai bun telefon de pe piata|6200|20|Culoare,Memorie,
+Legion 5 Pro|Laptopul programatorilor|7600|10|Culoare,Memorie RAM, Memorie SSD,
+S22 Ultra|Cel mai bun telefon cu Android|6000|7|Culoare,Memorie,Memorie RAM,
+Galaxy Tab S6|Tableta de la Samsung|4000|10|Culoare,
