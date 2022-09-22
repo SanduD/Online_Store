@@ -1,2 +1,4 @@
 Userul  a ales sa intre in aplicatie.
-Userul Barbusi a ales sa afiseze istoricul comenzilor.
+Userul mta a ales sa se afiseze produsele.
+Userul mta a selectat produsul Iphone 13
+Userul mta a introdus cantitatea   22

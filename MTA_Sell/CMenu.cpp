@@ -11,6 +11,7 @@
 #include "Error_File.h"
 #include "Error_Auth.h"
 #include "Error_Product.h"
+
 using namespace std;
 #define DIM_X 35
 #define DIM_Y 9
@@ -81,7 +82,15 @@ void welcome()
 		cout << "@";
 	}
 }
-
+bool check_username(string username)
+{
+	for (int i = 0; i < utilizatori.size(); i++)
+	{
+		if (utilizatori[i].get_name() == username)
+			return true;
+	}
+	return false;
+}
 bool verifica_utilizator(string name, string pass)
 {
 	for (auto it = utilizatori.begin(); it != utilizatori.end(); it++)
@@ -178,16 +187,26 @@ void Credentiale()
 	}
 	else
 	{
+        int count=0;
 		string aux_name, aux_pass;
-		cout << "Introduceti Username-ul contului:\n";
-		cin >> aux_name;
-		cout << "Introduceti parola contului:\n";
-		read_password(aux_pass);
-
+		do
+		{
+            if(count>0)
+                {
+                    cout << "\nAcest Username a fost deja folosit. Va rugam sa incercati altul.\n";
+                }
+			cout << "Introduceti Username-ul contului:\n";
+			cin >> aux_name;
+			cout << "Introduceti parola contului:\n";
+			read_password(aux_pass);
+            count++;
+		}while (check_username(aux_name));
 		ofstream file;
 		file.open("Users.txt", ofstream::app);
-		file << endl << aux_name + " " + aux_pass << " " << 0;
+		file << endl << aux_name + " " + aux_pass;
 		cout << "\nContul a fost creat cu succes.\n";
+		CUser utilizator(aux_name, aux_pass);
+		Utilizator_curent = utilizator;
 	}
 
 }
@@ -288,6 +307,7 @@ bool unique_product(string denumire,string magazin,int cantitate)
 	return true;
 
 }
+
 void Meniu_Produse()
 {
 	for (int i = 0; i < magazine.size(); i++)
@@ -303,13 +323,16 @@ void Meniu_Produse()
 			}
 		}
 	}
+}
+void print_Meniu()
+{
 	for (int i = 0; i < AllProducts.size(); i++)
 	{
 		vector<string>tmp_mag = AllProducts[i].get_magazine();
-		cout << i + 1 << ". " << AllProducts[i].get_denumire() <<"|"
-			<< AllProducts[i].get_pret() << "|" << AllProducts[i].get_cantitate() << "|Disponibil in "<<tmp_mag.size()<<" magazine:";
-		
-		
+		cout << i + 1 << ". " << AllProducts[i].get_denumire() << "|"
+			<< AllProducts[i].get_pret() << "|" << AllProducts[i].get_cantitate() << "|Disponibil in " << tmp_mag.size() << " magazine:";
+
+
 		for (int j = 0; j < tmp_mag.size(); j++)
 		{
 			if (j < tmp_mag.size() - 1)
@@ -319,7 +342,6 @@ void Meniu_Produse()
 		}
 		cout << endl;
 	}
-	
 }
 CMagazin find_store(string denumire_magazin)
 {
@@ -389,7 +411,7 @@ void selecteaza_produse()
 	float pret_comanda = 0;
 	bool withCard = false;
 	string adresa_comanda;
-	
+	bool flag = false;
 	while (true)
 	{
 		int optiune;
@@ -403,7 +425,7 @@ void selecteaza_produse()
 		{
 			if (optiune > 0 && optiune <= AllProducts.size())
 			{
-	
+				
 				string denumire_produs = AllProducts[optiune - 1].get_denumire();
 				log_file<<"Userul "<<Utilizator_curent.get_name()<<" a selectat produsul " << denumire_produs << endl;
 				cout << "Ati selectat produsul: " << denumire_produs <<endl;
@@ -424,6 +446,7 @@ void selecteaza_produse()
 				
 				if (cantitate > 0 && cantitate <= AllProducts[optiune - 1].get_cantitate())
 				{
+					flag = true;
 					CMagazin tmp_magazin;
 					string tmp_denumire_magazin = "";
 					int k = 0;
@@ -477,29 +500,35 @@ void selecteaza_produse()
 			}
 		}
 	}
-	
-	
-	cout << "Doresti sa platesti cu cardul? (1. Da /2. Nu)";
-	int opt_card;
-	cin >> opt_card;
-	if (opt_card == 1)
+	if (flag == true)
 	{
-		withCard = true;
+		cout << "Doresti sa platesti cu cardul? (1. Da /2. Nu)";
+		int opt_card;
+		cin >> opt_card;
+		if (opt_card == 1)
+		{
+			withCard = true;
+		}
+		log_file << "Userul " << Utilizator_curent.get_name() << " a selectat plata cu cardul" << withCard << endl;
+		cout << "Introduceti adresa de livrare: ";
+		cin >> adresa_comanda;
+
+		log_file << "Userul " << Utilizator_curent.get_name() << " a introdus adresa de livrare " << adresa_comanda << endl;
+		CComanda comanda_client(adresa_comanda, pret_comanda, withCard, produse_comanda);
+		Utilizator_curent.set_comenzi().push_back(comanda_client);
+		cout << "Comanda a fost plasata cu succes. O puteti gasi accesand istoricul comenzilor dumneavoastra.\n";
+		log_file << "Userul " << Utilizator_curent.get_name() << " a plasat comanda cu succes." << endl;
+
+		string istoric_utilizator = Utilizator_curent.get_name() + ".txt";
+		ofstream istoric(istoric_utilizator, ofstream::app);
+		istoric << comanda_client << endl;
+		istoric.close();
 	}
-	log_file << "Userul " << Utilizator_curent.get_name() << " a selectat plata cu cardul" << withCard << endl;
-	cout << "Introduceti adresa de livrare: ";
-	cin >> adresa_comanda;
+	else
+	{
+		cout << "Nu ati introdus niciun produs in cosul de cumparaturi. Va uram o zi placuta in continure.";
+	}
 	
-	log_file << "Userul " << Utilizator_curent.get_name() << " a introdus adresa de livrare " << adresa_comanda << endl;
-	CComanda comanda_client(adresa_comanda, pret_comanda, withCard, produse_comanda);
-	Utilizator_curent.set_comenzi().push_back(comanda_client);
-	cout << "Comanda a fost plasata cu succes. O puteti gasi accesand istoricul comenzilor dumneavoastra.\n";
-	log_file << "Userul " << Utilizator_curent.get_name() << " a plasat comanda cu succes." << endl;
-	
-	string istoric_utilizator = Utilizator_curent.get_name() + ".txt";
-	ofstream istoric(istoric_utilizator,ofstream::app);
-	istoric << comanda_client<<endl;
-	istoric.close();
 	std::this_thread::sleep_for(std::chrono::milliseconds(2500));
 	system("cls");
 	
@@ -516,7 +545,7 @@ void User_Menu()
 	case 1:
 	{
 		log_file << "Userul " << Utilizator_curent.get_name() << " a ales sa se afiseze produsele." << endl;
-		Meniu_Produse();
+		print_Meniu();
 		selecteaza_produse();
 		break;
 	}
@@ -530,7 +559,7 @@ void User_Menu()
 		break;
 	}
 	
-	Meniu_Produse();
+	
 }
 
 void CMenu::running()
@@ -538,7 +567,8 @@ void CMenu::running()
 
 	read_products("Nume_Magazine.txt");
 	read_users("Users.txt");
-	
+	Meniu_Produse();
+
 	while (true)
 	{
 		welcome();
